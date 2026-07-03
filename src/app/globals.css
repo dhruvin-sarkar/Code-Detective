@@ -1,0 +1,736 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* Design tokens — DESIGN.md is the source of truth. No other colors. */
+/* ------------------------------------------------------------------ */
+
+@theme {
+  --color-paper: #f4ecd8;
+  --color-paper-aged: #e9dcbc;
+  --color-paper-edge: #c9b68c;
+  --color-ink: #1f1b14;
+  --color-ink-soft: #4a3b28;
+  --color-sepia: #52442e;
+  --color-oxblood: #6e1f1b;
+  --color-stamp-red: #9e2b25;
+  --color-brass: #7a5c1e;
+}
+
+@theme inline {
+  --font-masthead: var(--font-unifraktur);
+  --font-display: var(--font-playfair);
+  --font-body: var(--font-oldstandard);
+  --font-typewriter: var(--font-specialelite);
+  --font-code: var(--font-courier);
+}
+
+/* ------------------------------------------------------------------ */
+/* The paper itself: grain + aged vignette on every page.              */
+/* Custom classes live in @layer components so Tailwind utilities      */
+/* (which live in a later layer) can override them — e.g. bg-oxblood   */
+/* on a .plate. Do not add unlayered class rules to this file.         */
+/* ------------------------------------------------------------------ */
+
+@layer base {
+  body {
+    background-color: var(--color-paper);
+    /* Fold creases, aged blotches, one coffee ring, and laid-paper chain
+       lines — texture in paper tones only (DESIGN.md rule 1). */
+    background-image:
+      /* diagonal sun-fade: the sheet sits under real light */
+      linear-gradient(
+        115deg,
+        rgba(74, 59, 40, 0.035) 0%,
+        transparent 26%,
+        rgba(255, 255, 255, 0.32) 45%,
+        rgba(255, 255, 255, 0.1) 55%,
+        transparent 68%,
+        rgba(74, 59, 40, 0.045) 100%
+      ),
+      linear-gradient(
+        180deg,
+        transparent calc(34% - 4px),
+        rgba(74, 59, 40, 0.025) calc(34% - 3px),
+        rgba(74, 59, 40, 0.055) calc(34% - 1px),
+        rgba(255, 255, 255, 0.3) 34%,
+        rgba(255, 255, 255, 0.12) calc(34% + 2px),
+        transparent calc(34% + 5px)
+      ),
+      radial-gradient(
+        circle 340px at 8% 12%,
+        rgba(122, 92, 30, 0.07),
+        transparent 70%
+      ),
+      radial-gradient(
+        circle 420px at 94% 88%,
+        rgba(110, 31, 27, 0.06),
+        transparent 72%
+      ),
+      radial-gradient(
+        circle 260px at 82% 6%,
+        rgba(82, 68, 46, 0.065),
+        transparent 70%
+      ),
+      radial-gradient(
+        circle 200px at 16% 90%,
+        rgba(82, 68, 46, 0.06),
+        transparent 70%
+      ),
+      radial-gradient(
+        circle at 76% 22%,
+        transparent 56px,
+        rgba(122, 92, 30, 0.06) 58px,
+        rgba(122, 92, 30, 0.025) 61px,
+        transparent 64px
+      ),
+      radial-gradient(
+        ellipse 200px 135px at 22% 62%,
+        transparent 60%,
+        rgba(122, 92, 30, 0.05) 65%,
+        rgba(122, 92, 30, 0.02) 72%,
+        transparent 80%
+      ),
+      radial-gradient(
+        circle 140px at 38% 42%,
+        rgba(82, 68, 46, 0.03),
+        transparent 70%
+      ),
+      radial-gradient(
+        circle 190px at 60% 74%,
+        rgba(122, 92, 30, 0.035),
+        transparent 70%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 27px,
+        rgba(74, 59, 40, 0.03) 27px 28px
+      );
+    background-attachment: fixed;
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    min-height: 100dvh;
+  }
+}
+
+/* Deliberately unlayered: when the detective cursor is active, no native
+   cursor (pointer, I-beam, text) may leak through anywhere. */
+html.cursor-hidden,
+html.cursor-hidden * {
+  cursor: none !important;
+}
+
+@layer base {
+/* fractalNoise grain, tiled data-URI, multiply — no image assets */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.055;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* aged edges */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 52%,
+    rgba(90, 70, 40, 0.12) 80%,
+    rgba(70, 50, 25, 0.27) 100%
+  );
+}
+
+::selection {
+  background: var(--color-oxblood);
+  color: var(--color-paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-oxblood);
+  outline-offset: 2px;
+}
+
+/* code blocks scroll on a period-appropriate rail */
+pre::-webkit-scrollbar {
+  height: 9px;
+  width: 9px;
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: var(--color-paper-edge);
+  border: 2px solid var(--color-paper-aged);
+}
+
+pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+}
+
+/* ------------------------------------------------------------------ */
+/* Period utilities                                                    */
+/* ------------------------------------------------------------------ */
+
+@layer components {
+.letterpress {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45),
+    0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* hard-offset plate; interactive plates press down */
+.plate {
+  background: var(--color-paper);
+  border: 2px solid var(--color-ink);
+  box-shadow: 6px 6px 0 var(--color-paper-edge);
+}
+
+.plate-press {
+  transition:
+    transform 120ms ease-out,
+    box-shadow 120ms ease-out;
+}
+
+.plate-press:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--color-paper-edge);
+}
+
+.plate-press:active {
+  transform: translate(4px, 4px);
+  box-shadow: 2px 2px 0 var(--color-paper-edge);
+}
+
+.rule-oxford {
+  border-top: 2px solid var(--color-ink);
+  position: relative;
+  padding-top: 2px;
+}
+
+.rule-oxford::before {
+  content: "";
+  display: block;
+  border-top: 1px solid var(--color-ink);
+}
+
+.rule-double {
+  border: 3px double var(--color-ink);
+}
+
+.hairline {
+  border-color: color-mix(in srgb, var(--color-ink) 35%, transparent);
+}
+
+.column-rules {
+  column-rule: 1px solid color-mix(in srgb, var(--color-ink) 35%, transparent);
+}
+
+.smallcaps {
+  font-variant-caps: small-caps;
+  letter-spacing: 0.12em;
+}
+
+.justified {
+  text-align: justify;
+  hyphens: auto;
+}
+
+.drop-cap::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 3.1em;
+  line-height: 0.85;
+  padding-right: 0.12em;
+}
+
+.manicule::before {
+  content: "\261E\00a0";
+}
+
+/* rubber stamp: distressed by the same grain mask */
+.stamp {
+  display: inline-block;
+  font-family: var(--font-typewriter);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-stamp-red);
+  border: 3px solid var(--color-stamp-red);
+  border-radius: 4px;
+  padding: 0.15em 0.5em;
+  transform: rotate(-4deg);
+  mix-blend-mode: multiply;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.92'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.92'/%3E%3C/svg%3E");
+  -webkit-mask-size: 130px;
+  mask-size: 130px;
+}
+
+.stamp-ink {
+  color: var(--color-sepia);
+  border-color: var(--color-sepia);
+}
+
+/* evidence tag: clipped corner + punched hole */
+.evidence-tag {
+  position: relative;
+  background: var(--color-paper-aged);
+  border: 1px solid var(--color-ink-soft);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  padding: 0.35rem 0.9rem 0.35rem 1.5rem;
+}
+
+.evidence-tag::before {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--color-paper);
+  box-shadow: inset 0 0 0 1.5px var(--color-ink-soft);
+}
+
+/* the printed-sheet frame around every page */
+.page-frame {
+  position: fixed;
+  inset: 8px;
+  z-index: 40;
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+}
+
+.page-frame::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 2px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+
+.page-frame::after {
+  content: "\2766";
+  position: absolute;
+  top: -0.72em;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 0.5em;
+  background: var(--color-paper);
+  color: color-mix(in srgb, var(--color-sepia) 65%, transparent);
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* Print-through: two editions ghosting through at different depths.
+   Each layer is a real broadsheet — a grid of UNEVEN column tracks
+   separated by hairline rules, not uniform multicol tiling. The rear
+   layer is larger, blurred, fainter, fractionally rotated (the page
+   underneath the one underneath); the front is sharper. Their track
+   grids differ so no gutter ever lines up. Static, zero per-frame cost. */
+.ghost-layer {
+  position: fixed;
+  z-index: -1;
+  display: grid;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: var(--font-body);
+  line-height: 1.55;
+  text-align: justify;
+  color: var(--color-ink-soft);
+}
+
+.ghost-rear {
+  inset: -4rem;
+  grid-template-columns: 1.6fr 1.05fr 2fr 1.25fr 1.7fr;
+  font-size: 15px;
+  opacity: 0.042;
+  filter: blur(0.7px);
+  transform: rotate(-0.6deg) scale(1.02);
+}
+
+.ghost-front {
+  inset: -2rem -2rem -2rem -6rem; /* left offset staggers the gutters */
+  grid-template-columns: 1.35fr 0.9fr 1.8fr 1.05fr 1.5fr 0.85fr 1.25fr;
+  font-size: 12px;
+  opacity: 0.066;
+}
+
+.ghost-col {
+  overflow: hidden;
+  padding: 0 1.1em;
+  border-left: 1px solid color-mix(in srgb, var(--color-ink) 40%, transparent);
+}
+
+.ghost-col:first-child {
+  border-left: none;
+}
+
+/* uneven press: some columns took the ink heavier than others */
+.ghost-col:nth-child(3n) {
+  opacity: 0.68;
+}
+
+.ghost-col:nth-child(3n + 1) {
+  opacity: 1.3;
+}
+
+.ghost-col:nth-child(5n + 2) {
+  filter: blur(0.35px);
+}
+
+/* a broadsheet leads each column with a bigger deck */
+.ghost-col > .ghost-headline:first-child {
+  font-size: 1.5em;
+  line-height: 1.22;
+}
+
+.ghost-layer p {
+  margin-bottom: 0.9em;
+}
+
+.ghost-headline {
+  font-variant-caps: small-caps;
+  font-weight: 700;
+  font-size: 1.08em;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.ghost-brief {
+  text-align: center;
+  font-style: italic;
+  font-size: 0.95em;
+}
+
+/* classified boxes, set apart with a hairline border */
+.ghost-ad {
+  border: 1px solid currentColor;
+  padding: 0.55em 0.75em;
+  font-variant-caps: small-caps;
+  letter-spacing: 0.06em;
+  font-size: 0.92em;
+  text-align: center;
+}
+
+/* a headline here and there took the red plate — two-color edition */
+.ghost-red {
+  color: var(--color-oxblood);
+  opacity: 1.55;
+}
+
+/* the evidence the glass found: a dusted print, counterweight right */
+.print-plate {
+  position: fixed;
+  top: 40vh;
+  right: max(-4vw, -56px);
+  z-index: -1;
+  width: min(27vw, 400px);
+  pointer-events: none;
+  color: var(--color-ink);
+  opacity: 0.095;
+  transform: rotate(9deg);
+}
+
+.print-plate svg {
+  width: 100%;
+  height: auto;
+}
+
+/* halftone dot fields fading out of two page corners (period print texture) */
+.halftone-corner {
+  position: fixed;
+  z-index: 45;
+  width: min(58vmin, 580px);
+  height: min(58vmin, 580px);
+  pointer-events: none;
+  opacity: 0.085;
+  background-image: radial-gradient(
+    circle,
+    var(--color-ink) 1px,
+    transparent 1.15px
+  );
+  background-size: 9px 9px;
+}
+
+.halftone-tl {
+  top: 0;
+  left: 0;
+  -webkit-mask-image: radial-gradient(closest-side at 0 0, #000 25%, transparent);
+  mask-image: radial-gradient(closest-side at 0 0, #000 25%, transparent);
+}
+
+.halftone-br {
+  right: 0;
+  bottom: 0;
+  -webkit-mask-image: radial-gradient(
+    closest-side at 100% 100%,
+    #000 25%,
+    transparent
+  );
+  mask-image: radial-gradient(closest-side at 100% 100%, #000 25%, transparent);
+}
+
+/* the faded circular postmark, upper right — background ephemera, so its
+   rotation is exempt from the one-rotated-element rule (DESIGN.md) */
+.postmark {
+  position: fixed;
+  top: 68px;
+  right: 5.5%;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 148px;
+  height: 148px;
+  pointer-events: none;
+  border: 2px solid var(--color-sepia);
+  border-radius: 50%;
+  opacity: 0.1;
+  transform: rotate(10deg);
+}
+
+.postmark::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px dashed var(--color-sepia);
+  border-radius: 50%;
+}
+
+.postmark-text {
+  padding: 0 14px;
+  font-family: var(--font-typewriter);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  line-height: 1.6;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--color-sepia);
+}
+
+/* printer's stars pinning the frame's four corners */
+.frame-corner {
+  position: fixed;
+  z-index: 45;
+  width: 17px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: var(--color-paper);
+  color: color-mix(in srgb, var(--color-sepia) 70%, transparent);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.frame-corner-tl {
+  top: 0;
+  left: 0;
+}
+
+.frame-corner-tr {
+  top: 0;
+  right: 0;
+}
+
+.frame-corner-bl {
+  bottom: 0;
+  left: 0;
+}
+
+.frame-corner-br {
+  bottom: 0;
+  right: 0;
+}
+
+/* fleuron breaking the page frame's bottom rule, mirroring the top one */
+.frame-fleuron-bottom {
+  position: fixed;
+  bottom: 2px;
+  left: 50%;
+  z-index: 45;
+  transform: translateX(-50%);
+  padding: 0 0.5em;
+  pointer-events: none;
+  background: var(--color-paper);
+  color: color-mix(in srgb, var(--color-sepia) 65%, transparent);
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* enormous, near-invisible glyph behind a screen's content */
+.watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: var(--font-display);
+  color: var(--color-ink);
+  opacity: 0.04;
+}
+
+/* wax seal */
+.wax-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-oxblood);
+  color: var(--color-paper);
+  border-radius: 47% 53% 50% 48% / 51% 47% 53% 49%;
+  box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.18),
+    inset -2px -3px 5px rgba(0, 0, 0, 0.35);
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion (DESIGN.md — sparse, crisp)                                  */
+/* ------------------------------------------------------------------ */
+
+/* All entrances use fill-mode `backwards`: if animations cannot run at
+   all, the element simply renders in its natural (visible) state —
+   content is never gated behind a script or an animation engine. */
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes thump {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(-4deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.95) rotate(-4deg);
+  }
+  100% {
+    transform: scale(1) rotate(-4deg);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slam {
+  from {
+    opacity: 0;
+    transform: scale(1.06) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.anim-pop-in {
+  animation: pop-in 220ms ease-out backwards;
+}
+
+.anim-thump {
+  animation: thump 180ms ease-out backwards;
+}
+
+.anim-fade-up {
+  animation: fade-up 400ms ease-out backwards;
+}
+
+.anim-slam {
+  animation: slam 350ms cubic-bezier(0.22, 0.9, 0.3, 1) backwards;
+}
+
+.anim-slide-in {
+  animation: slide-in 300ms ease-out backwards;
+}
+
+/* entrance stagger steps */
+.anim-delay-1 {
+  animation-delay: 120ms;
+}
+.anim-delay-2 {
+  animation-delay: 240ms;
+}
+.anim-delay-3 {
+  animation-delay: 330ms;
+}
+.anim-delay-4 {
+  animation-delay: 420ms;
+}
+.anim-delay-5 {
+  animation-delay: 700ms;
+}
+.anim-delay-6 {
+  animation-delay: 1050ms;
+}
+/* podium ceremony beats (HostFinal): 3rd, 2nd, drumroll, 1st, awards */
+.anim-delay-podium-3 {
+  animation-delay: 400ms;
+}
+.anim-delay-podium-2 {
+  animation-delay: 1600ms;
+}
+.anim-delay-podium-1 {
+  animation-delay: 3400ms;
+}
+.anim-delay-awards {
+  animation-delay: 4400ms;
+}
+
+.fuse-bar {
+  transition: width 250ms linear, background-color 400ms ease;
+}
+}
+
+/* Deliberately unlayered: the reduced-motion override must always win. */
+@media (prefers-reduced-motion: reduce) {
+  .anim-pop-in,
+  .anim-thump,
+  .anim-fade-up,
+  .anim-slam,
+  .anim-slide-in {
+    animation: none;
+  }
+  .fuse-bar,
+  .plate-press {
+    transition: none;
+  }
+}
